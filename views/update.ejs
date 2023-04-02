@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--favicon-->
+<link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+<link rel="manifest" href="/favicon/site.webmanifest">
+
+	<meta charset="UTF-8">
+	<title>WebDocX</title>
+	<link rel="stylesheet" type="text/css" href="/stylesheets/update.css">
+	<link rel="stylesheet" type="text/css" href="/stylesheets/nav.css">
+	<script type="text/javascript" src="/scripts/update.js"></script>
+	<script type="text/javascript" src="/scripts/speechrecog.js"></script>
+	<script type="text/javascript" src="/scripts/nav.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+	<!--Alert messages and notification-->
+	<div class="notification card" style="display:none;" id="notification">
+		<% if (errorMessage && errorMessage.length > 0) { %>
+		  <script>document.getElementById('notification').style.display='block';document.getElementById('notification').style.backgroundColor='#f8d7da';document.getElementById('notification').style.backgroundImage='none';</script>
+		  <span style="color:#721c24;">
+			<i class="fa fa-exclamation-triangle" aria-hidden="true"></i><b><%= errorMessage %></b>
+		  </span><br>
+		<% } %>
+	
+		<% if (successMessage && successMessage.length > 0){ %>
+		  <script>document.getElementById('notification').style.display='block';document.getElementById('notification').style.backgroundColor='#d4edda';document.getElementById('notification').style.backgroundImage='none';</script>
+		  <span style="color:#155724;">
+			<i class="fa fa-check" aria-hidden="true"></i><b><%= successMessage %></b>
+		  </span><br>
+		<% } %>
+		<span onclick="document.getElementById('notification').style.display='none'" class="close" title="Close Modal">&times;</span>
+	  </div>
+
+	  <% if (typeof currentAccount.profilePic.data.data !== 'undefined') {
+		var image = Buffer.from(currentAccount.profilePic.data.data).toString('base64');
+		var type = currentAccount.profilePic.contentType;
+	}%>
+
+	<div class="topnav">
+		<button id="dash" style="float:left"><i class="fa fa-home" aria-hidden="true"></i></button>
+		<script type="text/javascript">
+			document.getElementById("dash").onclick = function () {
+				location.href = "/dashboardDoc";
+			};
+		</script>
+		<button class="dropdown" style="background-color:white;color:black;float:left;"><i class="fa fa-user" aria-hidden="true"></i></button>
+		<button id="not" onclick="notdrop()"type="button" style="position:relative;width:70px;"><i class="fa fa-bell-o" aria-hidden="true"></i><span id="count" class="counter"><%= myAccount.notifications.length%></span></button>
+		<span id="lg" style="clear:both; position:absolute;top:15px;left:40%;">
+			<img src="/images/notext.png" alt="Webdocx" width="50px" height="20px">
+			<img id="textlogo" src="/images/text.png" alt="Webdocx" width="150px" height="20px">
+			</span>
+			<button id="logdrop" onclick="logdrop()" style="float:right;"><img id="prof" class="avatar" style="width:40px;height:40px;" src="data:<%= type %>;base64,<%= image %>" /></button>
+			<script type="text/javascript">
+				document.getElementById("dash").onclick = function () {
+					location.href = "/dashboardDoc";
+				};
+				document.getElementById("update").onclick = function () {
+					location.href = "/update";
+				};
+			</script>
+		<button type="button" style="float:right;width:50px;" onclick="runSpeechRecognition()"><i id="mic" class="fa fa-microphone"></i></button>
+		<form action="#"style="float:right;">
+			<input type="text" placeholder="Search.." id="search" name="search">
+			<button type="submit" style="width:50px;"><i class="fa fa-search"></i></button>
+		</form>
+	</div>
+
+	<!--Logout menu-->
+	<span id="log" class="dropdiv" style="left:87%;overflow:scroll; height:200px;">
+		<button onclick="location.href='/update'" id="" ><i class="fa fa-user" aria-hidden="true"></i> Profile</button>
+		<button id="" ><i class="fa fa-comments" aria-hidden="true"></i> Messages</button>
+		<button id="logout"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</button>
+	</span>
+	<script>
+	document.getElementById("logout").onclick = function () {
+		location.href = "/logout";
+	};</script>
+
+	<!--user notification-->
+	<div style="left:160px;width:400px; padding:10px;overflow:scroll; max-height:400px;" id="unotification" class="dropdiv">
+		<b style="margin:20px;">Notifications</b>
+		<% var co=0; for(var i=currentAccount.notifications.length-1;i>=0;i--){if(!currentAccount.notifications[i].seen){ co++;%>
+			<div onclick="sub('<%= currentAccount.notifications[i]._id%>','<%=i%>')" class="unotification" id="n<%=i%>">
+				<span style="font-weight: bold;" id="urm<%=i%>"><%= currentAccount.notifications[i].message%></span>
+				<script>
+					function sub(n_id,nid){
+						var xhttp = new XMLHttpRequest();
+						xhttp.onreadystatechange = function() {
+						  if (this.readyState == 4 && this.status == 200) {
+							var cc=parseInt(document.getElementById('count').innerHTML)-1;
+							document.getElementById('count').innerHTML=cc;
+							document.getElementById('urm'+nid).style.fontWeight='normal';
+						  }
+						};
+						  xhttp.open("POST", "/dashboardDoc/read/"+n_id, true);
+						  xhttp.send();
+						  }
+				</script>
+				<%} else{%>
+					<div class="unotification" id="n<%=i%>">
+					<%= currentAccount.notifications[i].message%>
+				<%}%>
+			
+			<% 
+					var tdat= new Date().getDate();
+					var tday= new Date().getDay();
+					var ty= new Date().getFullYear();
+					var tm= new Date().getMonth();
+					var th= new Date().getHours();
+					var tmin= new Date().getMinutes();
+					var tsec= new Date().getSeconds();
+					var dat= currentAccount.notifications[i].time.getDate();
+					var day= currentAccount.notifications[i].time.getDay();
+					var y= currentAccount.notifications[i].time.getFullYear();
+					var m= currentAccount.notifications[i].time.getMonth();
+					var h= currentAccount.notifications[i].time.getHours();
+					var min= currentAccount.notifications[i].time.getMinutes();
+					var sec= currentAccount.notifications[i].time.getSeconds();
+					if(ty!=y)
+					{
+						ty=ty+0;
+						y=y+0;
+						var p= ty-y;
+						p=p.toString();
+						p=p+"y";
+					}
+					else if(tm!=m)
+					{
+						tm=tm+0;
+						m=m+0;
+						var p= tm-m;
+						p=p.toString();
+						p=p+"month";
+					}
+					else if(tdat!=dat)
+					{
+						tdat=tdat+0;
+						dat=dat+0;
+						var p= tdat-dat;
+						p=p.toString();
+						p=p+"d";
+					}
+					else if(th!=h)
+					{
+						th=th+0;
+						h=h+0;
+						var p= th-h;
+						p=p.toString();
+						p=p+"h";
+					}
+					else if(tmin!=min)
+					{
+						tmin=tmin+0;
+						min=min+0;
+						var p= tmin-min;
+						p=p.toString();
+						p=p+"min";
+					}
+					else if(tsec!=sec)
+					{
+						tsec=tsec+0;
+						sec=sec+0;
+						var p= tsec-sec;
+						p=p.toString();
+						p=p+"sec";
+					}
+					%>
+					<br>
+				<span style="float:left;color:grey"><%= p %> ago</span>
+				<% if(currentAccount.notifications[i].type==3){%>
+					<span onclick="location.href='<%= currentAccount.notifications[i].url%>'" style="color:grey;position:absolute;top:40%;left:95%;font-size: medium;"><i class="fa fa-external-link" aria-hidden="true"></i></span>
+					<span style="float:right;color:grey"><i class="fa fa-user" aria-hidden="true"></i></span>
+				<% }%>
+		</div>
+
+		<script>document.getElementById('count').innerHTML="<%=co%>"</script><% } %>
+	</div>
+
+		<% if (typeof myAccount.profilePic.data !== 'undefined') {
+			var image = myAccount.profilePic.data.toString('base64');
+			var type = myAccount.profilePic.contentType;
+		}%>
+		<% if (typeof myAccount.license.data !== 'undefined') {
+			var license = myAccount.license.data.toString('base64');
+			var ltype = myAccount.license.contentType;
+		}%>
+		<div class="col-container">
+			<div class="col" style="position:relative;width:20%">
+				<div class="card" align="center" style="top:0px; position:absolute;padding:16px; width:80%">
+				<img class="avatar" style="width:150px;height:150px;" src="data:<%= type %>;base64,<%= image %>" />				
+				<h3>DR. <%= myAccount.name %> <i class="fa fa-check-circle"  id="verified" style="color:green;"></i><!--make this visible if verified--></h3>
+				<h3><%= myAccount.username %></h3>
+				</div>
+				<br><br><br>
+				<div align="center">
+					<a  id="p" onclick="personal1()" style="color:black;"><b>Personal Info</b></a><br><br>
+					<a  id="m" onclick="medical1()"><b>Medical Info</b></a><br><br>
+					<a  id="a" onclick="address1()"><b>Address</b></a>
+				</div>
+			</div>
+		
+			<div class="col card" id="update" style=" width:70%">
+				<div id="pp">
+				<img class="avatar center" id="upprof" src="data:<%= type %>;base64,<%= image %>" style="width:250px;height:250px;"/>
+				<button id="op" class="roundbtn" onclick="dpopen()" style=" position:absolute; top:250px; right:340px;"><i class="fa fa-pencil"></i></button>
+				<button id="cl" class="roundbtn" onclick="dpclose('data:<%= type %>;base64,<%= image %>')" style=" position:absolute; top:250px; right:340px;display:none;"><i class="fa fa-times"></i></button>
+				<form id="dp" action="/update/profilePic" method="post" style="display:none;" enctype="multipart/form-data">
+					<label  style=" position:absolute; top:260px; right:300px;"><i id="pic" class="fa fa-file-image-o fa-2x"></i><input onchange="chk(event)"  type="file" id="profilepic" style="display:none;" name="profilepic" accept="image/*" required></label>
+					<button class="roundbtn" type="submit" style=" position:absolute; top:250px; right:240px;"><i class="fa fa-chevron-right" ></i></button>
+				</form>
+				</div>
+
+				<form class="form-container" action="/update" method="post"  enctype="multipart/form-data">
+					<span id="personal">
+					<label for="email"><b>Email(Username)</b></label><span name="show" style="display:none;" id="1"></span>
+					<input type="text" id="email" name="email" style="width:97%" value="<%= myAccount.username %>" readonly>
+					<label for="phn"><b>Phone Number</b></label><span name="show" style="display:none;" id="2"></span>
+    				<input type="text"  placeholder="Phone Number" id="phn" name="phoneNumber" style="width:97%" value="<%= myAccount.phoneNumber %>" required>
+					<label for="name"><b>Name</b></label><span name="show" style="display:none;" id="3"></span>
+					<input type="text" id="name" name="name" style="width:97%" value="<%= myAccount.name %>" required>
+					</span>
+					<span id="medical" style="display:none;">
+					<label for="degree"><b>Medical Degrees</b></label><span name="show" style="display:none;" id="4"></span>
+					<input type="text" placeholder="Medical Degrees" id="degree" name="qualification" style="width:97%" value="<%= myAccount.qualification %>" required>
+					<label for="regno"><b>Registration Number</b></label><span name="show" style="display:none;" id="5"></span>
+					<input type="text" placeholder="Registration Number(Provided by Medical Council)" id="regno" name="reg_no" style="width:97%" value="<%= myAccount.reg_no %>" required>
+					<label for="license"><b>License</b></label><span name="show" style="display:none;" id="6" ></span><button id="vbtn" type="button" onclick="ls()" style="background-color: transparent;border-width: 0px;">(View)</button>
+					<div id="lic" style="display:none;">
+						<% if (typeof myAccount.license.data !== 'undefined') { %>
+							<embed style="width:150px;height:150px;" src="data:<%= ltype %>;base64,<%= license %>" />
+						<% } %>
+					</div><br>
+					<input type="file" id="license" name="license" style="width:97%" required>
+					<% if (typeof myAccount.license.data !== 'undefined') { %>
+						<script>document.getElementById('license').required=false;</script>
+					<% } %>
+					<label for="spec"><b>Speciality</b></label><br><span name="show" style="display:none;" id="7"></span>
+					<input type="text" placeholder="speciality" id="spec" name="speciality" required style="width:97%;" value="<%= myAccount.speciality %>">
+					<label for="spec"><b>Experience(In years)</b></label><br><span name="show" style="display:none;" id="8"></span>
+					<input type="text" placeholder="Experience of work in years" id="exp" name="experience" required style="width:97%;" value="<%= myAccount.experience %>">
+					</span>
+					<span id="address" style="display:none;">
+					<br><label for="addr"><b>Address</b></label><span name="show" style="display:none;" id="9"></span>
+					<input type="text"  placeholder="Address"id="addr" name="address" style="width:97%" value="<%= myAccount.home.address %>" required>
+					<label for="city"><b>City</b></label><span name="show" style="display:none;" id="10"></span>
+					<input type="text" placeholder="City" id="city" name="city" style="width:97%" value="<%= myAccount.home.city %>" required>
+					<label for="country"><b>Country</b></label><span name="show" style="display:none;" id="11"></span>
+					<input type="text" placeholder="Country" id="country" name="country" style="width:97%" value="<%= myAccount.home.country %>" required>
+					</span>
+					<br><br>
+					<button type="submit" class="btn" id="submit" style="display: none;">Submit</button>
+					<button type="button" class="cnfbtn" id="confirm" onclick="cnf()">Confirm</button>
+					<button type="button" class="cnfbtn" id="back" style="background-color:red;display:none;" onclick="bck()">Back</button>
+				</form>
+			</div>
+		</div>
+		<button onclick="topFunction()" id="myBtn" title="Go to top" style="visibility: hidden;"><b>&uarr;</b></button>
+</body>
+</html>
